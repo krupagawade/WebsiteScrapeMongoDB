@@ -71,7 +71,8 @@ function getSavedArticles(){
         var newDiv = '<div class="panel panel-info">' +
         '<h4 class= "panel-title" data-id=' + data[i]._id + '> <a href="' + data[i].link + '">' + data[i].title + '</a>' +
         '<div class="panel-body">' + data[i].description + '</div>'  +     
-        '<button type="button" class="saveArticle btn btn-primary" onclick=saveArticle("' + data[i]._id + '")>Saved Article</button>'
+        '<button type="button" class="saveArticle btn btn-primary" onclick=saveArticle("' + data[i]._id + '")>Delete Article</button>' +
+        ' <button type="button" class="saveNote btn btn-primary" data-toggle="modal" data-target="#notesModal" data-whatever="' + data[i]._id + '" onclick=getID("' + data[i]._id + '")>Add Notes</button>'
         '</div>'
         $("#articles").append(newDiv);    
         //$("#articles").append("<p data-id='" + data[i]._id + "'>" + data[i].title + "<br />" + data[i].link + "</p>");
@@ -80,6 +81,14 @@ function getSavedArticles(){
 
 }
 
+function getID(val){
+    console.log(val);
+    $("#news_id").val(val);
+}
+
+function saveNotes(id){
+
+}
 
 //document ready
 $(function() {
