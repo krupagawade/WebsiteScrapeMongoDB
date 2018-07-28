@@ -35,9 +35,6 @@ function getScrappedArticles(){
 
 function saveArticle(val){
 
-    console.log(articleData.length +"val" +  val );
-    console.log(articleData[parseInt(val)]);
-
     // Now make an ajax call to save the Article
     $.ajax({
     method: "post",
@@ -65,10 +62,8 @@ function goHome(){
 
 //called by the body onload of saved.html
 function getSavedArticles(){
-    console.log("getting articles");
         $.getJSON("/savedArticles", function(data) {
             var bodyDiv = $("#articles");
-        console.log("Got data" + data.length);
         for (var i = 0; i < data.length; i++) {
         // Display the apropos information on the page
     
@@ -86,7 +81,6 @@ function getSavedArticles(){
 }
 
 function getID(val){
-    console.log(val);
     $("#article_id").val(val);
     $("#article_notes").val("");
     getNotes(val);
@@ -98,7 +92,6 @@ function saveNotes(){
         id: $("#article_id").val(), 
         notesDesc: $("#article_notes").val()
     };
-   console.log('notes', notesDetails);
    
     $.ajax({
         method: "post",
@@ -120,7 +113,6 @@ function getNotes(id){
   })
     // With that done, add the note information to the page
     .then(function(data) {
-        //console.log(data);
         var label_notes = $("<label id='label_notes'>");
         label_notes.text(data.note[0].body);
         var button_deleteNote = $("<button id='button_deleteNote' type='button' class='close' aria-label='Close' onclick=deleteNote('"+id+"')><span aria-hidden='true'>&times;</span></button>");
@@ -148,7 +140,6 @@ function deleteArticle(id){
         // On successful call
         success: function(response) {
             $("#articles").empty();
-            console.log("Refresh");
             getSavedArticles();
         }
     });
@@ -157,7 +148,5 @@ function deleteArticle(id){
 
 //document ready
 $(function() {
-   // console.log("document load");
     $("#header").load("nav.html"); 
-
 });

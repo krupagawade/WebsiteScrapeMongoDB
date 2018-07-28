@@ -69,14 +69,9 @@ app.get("/scrape", function (req, res) {
                         "link": result.link,
                         "description": result.description
                 }    
-                //console.log("****************");
-                //console.log(Articles);
                 Articles.push(article);            
-                // console.log("$$$$"+ Articles.length);
             } //end of if
         }); //end of each article
-        // console.log("Getting DATA !!!!!!!!!!!!!!!!");
-        // console.log(JSON.stringify(Articles));
         res.send(JSON.stringify(Articles));
     });
 });  //end of get function
@@ -94,7 +89,7 @@ app.post("/saveArticle/", function(req, res) {
         if (err) {
             if(err.code === 11000)
             // Log the error if one is encountered during the query
-                console.log("Found Duplicate");
+                return res.json("Found Duplicate");
             else
                 return res.json(err);
         }
@@ -104,7 +99,6 @@ app.post("/saveArticle/", function(req, res) {
 app.post("/saveNotes/", function(req, res){
     var id = req.body.id;
     var notesDetails = req.body.notesDesc;
-    //console.log(notesDetails + id );
       // Create a new note and pass the req.body to the entry
     db.Note.create({
         _id : id,
@@ -148,7 +142,6 @@ app.get("/notes/:id", function(req, res){
     // ..and populate all of the notes associated with it
     .populate("note")
     .then(function(dbArticle) {
-        console.log(dbArticle);
       // If we were able to successfully find an Article with the given id, send it back to the client
       res.json(dbArticle);
     })
@@ -165,7 +158,7 @@ app.get("/deleteNote/:id", function(req, res){
     db.Note.findOneAndRemove(
         {"_id": req.params.id}, function(err){
             if(err)
-                console.log(err);
+                res.send(err);
         }
     );
 
@@ -175,7 +168,6 @@ app.get("/deleteNote/:id", function(req, res){
          .exec(function(err) {
             // Log any errors
             if (err) {
-              console.log(err);
               res.send(err);
             }
             else {
