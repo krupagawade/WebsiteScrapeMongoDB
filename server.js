@@ -36,6 +36,8 @@ mongoose.connect("mongodb://localhost/websiteScrapeMongoDB");
 app.get("/scrape", function (req, res) {
     // First, we grab the body of the html with request
 
+    var Articles = new Array();
+
 //    request("https://www.nytimes.com/", function (error, response, html) {
     axios.get("https://www.nytimes.com/").then(function (response) {
             // Then, we load that into cheerio and save it to $ for a shorthand selector
@@ -59,55 +61,78 @@ app.get("/scrape", function (req, res) {
 
             // If this found element had both a title and a link
             if (result.title && result.link) {
-                // Insert the data in the scrapedData db
-                db.Article.create({
-                    title: result.title,
-                    link: result.link,
-                    description: result.description
-                },
-                function (err, inserted) {
-                    if (err) {
-                        if(err.code === 11000)
-                        // Log the error if one is encountered during the query
-                            console.log("Found Duplicate");
-                        else
-                            return res.json(err);
-                    }
-                });
+
+                //var article = ["title": result.title, "link": result.link,"description": result.description];
+
+                var article = {
+                        "title": result.title,
+                        "link": result.link,
+                        "description": result.description
+                }    
+                //console.log("****************");
+                //console.log(Articles);
+                Articles.push(article);            
+                // console.log("$$$$"+ Articles.length);
             } //end of if
         }); //end of each article
-        console.log("Getting DATA !!!!!!!!!!!!!!!!");
-
-        //Once all the articles are inserted in MongoDB we do a select from Articles to send to user
-        db.Article.find({})
-        .then(function(dbArticle){
-        res.json(dbArticle);
-          console.log("length !!!!!!"+dbArticle.length);
-        })
-        .catch(function(err){
-        res.json(err);
-        });
+        // console.log("Getting DATA !!!!!!!!!!!!!!!!");
+        // console.log(JSON.stringify(Articles));
+        res.send(JSON.stringify(Articles));
     });
 });  //end of get function
 
 
-//Route for changing the attribute Saved Article as per user selection
-app.get("/articles/:id", function(req, res) {
-    //var query = { _id = req.params.id};
-    
-    db.Article.findOneAndUpdate({ _id: req.params.id }, {$set: {saveArticle: true}},function(err, result){
-        if(err){
-            console.log(err);
+//Route for saving the Article in MongoDB
+app.post("/saveArticle/", function(req, res) {
+
+    db.Article.create({
+        title: req.body.title,
+        link: req.body.link,
+        description: req.body.description
+    },
+    function (err, inserted) {
+        if (err) {
+            if(err.code === 11000)
+            // Log the error if one is encountered during the query
+                console.log("Found Duplicate");
+            else
+                return res.json(err);
         }
-        else
-            return true;
+    }); //end of insert
+});//end of post
+
+app.post("/saveNotes/", function(req, res){
+    var id = req.body.id;
+    var notesDetails = req.body.notesDesc;
+    //console.log(notesDetails + id );
+      // Create a new note and pass the req.body to the entry
+    db.Note.create({
+        _id : id,
+        body : notesDetails
+    })  
+    .then(function(dbNote) {
+        // If a Note was created successfully, find one Article with an `_id` equal to `req.params.id`. Update the Article to be associated with the new Note
+        // { new: true } tells the query that we want it to return the updated User -- it returns the original by default
+        // Since our mongoose query returns a promise, we can chain another `.then` which receives the result of the query
+        return db.Article.findOneAndUpdate({ _id: id }, { note: dbNote._id }, { new: true });
+    })
+    .then(function(dbArticle) {
+        // If we were able to successfully update an Article, send it back to the client
+        res.json(dbArticle);
+    })
+    .catch(function(err) {
+        // If an error occurred, send it to the client
+        res.json(err);
     });
 
-});//end of get
+});
+
+
 
 //Route for getting all the saved articles
 app.get("/savedArticles", function(req, res){
-    db.Article.find({saveArticle:true})
+//    db.Article.find({saveArticle:true})
+    db.Article.find({})
     .then(function(dbArticle){
         res.json(dbArticle);
     })
@@ -116,8 +141,78 @@ app.get("/savedArticles", function(req, res){
     });
 });
 
+//Route to get all the notes saved for a article
+app.get("/notes/:id", function(req, res){
+
+    db.Article.findOne({ _id: req.params.id })
+    // ..and populate all of the notes associated with it
+    .populate("note")
+    .then(function(dbArticle) {
+        console.log(dbArticle);
+      // If we were able to successfully find an Article with the given id, send it back to the client
+      res.json(dbArticle);
+    })
+    .catch(function(err) {
+      // If an error occurred, send it to the client
+      res.json(err);
+    });
+
+})
+
+//delete notes 
+app.get("/deleteNote/:id", function(req, res){
+
+    db.Note.findOneAndRemove(
+        {"_id": req.params.id}, function(err){
+            if(err)
+                console.log(err);
+        }
+    );
+
+     db.Article.findOneAndUpdate(
+         {"_id": req.params.id},
+         {$pull: {"note": req.params.id}})
+         .exec(function(err) {
+            // Log any errors
+            if (err) {
+              console.log(err);
+              res.send(err);
+            }
+            else {
+              // Or send the note to the browser
+              res.send("Note Deleted");
+            }
+        }
+    ); //end of article Note field delete
+
+
+});//end of delete note
+
+//Delete Article
+app.get("/deleteArticle/:id", function(req, res){
+
+    db.Note.findOneAndRemove(
+        {"_id": req.params.id}, function(err){
+            if(err)
+                res.send(err);
+            else{
+                db.Article.findOneAndRemove(
+                    {"_id": req.params.id}, function(err){
+                        if(err)
+                            res.send(err);
+                        else
+                            res.send("Article deleted");
+                    }
+                );
+            }
+        }   
+    );
+
+});//end of delete note
+
+
 
 // Start the server
 app.listen(PORT, function() {
     console.log("App running on port " + PORT + "!");
-});
+}); 
