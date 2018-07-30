@@ -1,6 +1,3 @@
-// $("#scrape").on("click", getScrappedArticles);
-// $("#savedArticles").on("click", gotoSavedArticles);
-// $("#savedArticles1").on("click", gotoSavedArticles);
 
 var articleData = "";
 
@@ -23,11 +20,15 @@ function getScrappedArticles(){
         }
 
         // Display the apropos information on the page
-        var newDiv = '<div class="panel panel-info">' +
-        '<h4 class= "panel-title" data-id=' + data[i]._id + '> <a href="' + data[i].link + '">' + data[i].title + '</a>' +
-        '<div class="panel-body">' + data[i].description + '</div>'  +     
+//    '<h4 class= "card-title" data-id=' + data[i]._id + '> <a href="' + data[i].link + '">' + data[i].title + '</a>' +
+//'<p><h6 class="card-text">' + data[i].description + '</h6></p>'  +     
+    
+
+        var newDiv = '<div class="card"> <div class="card-body">' +
+        '<h4 class= "card-title" data-id=' + data[i]._id + '> <a href="' + data[i].link + '">' + data[i].title + '</a>' +
+        '<p><h6 class="card-text">' + data[i].description + '</h6></p>'  +     
         '<button type="button" class="saveArticle btn btn-success" id="' + i + '" onclick=saveArticle("' + i + '")>'+ buttonName + '</button>'
-        '</div><br>'
+        '</div></div>'
         $("#articles").append(newDiv);    
         }
     });
@@ -44,10 +45,11 @@ function saveArticle(val){
     })
     // With that done, add the note information to the page
     .then(function(data) {
-        console.log(data);
+        console.log(val);
+        //change the button text to saved
     });
-    //change the button text to saved
-    $(val).text("Saved");
+    $(`#${val}`).html("Saved");
+
 };
 
 
@@ -67,12 +69,12 @@ function getSavedArticles(){
         for (var i = 0; i < data.length; i++) {
         // Display the apropos information on the page
     
-        var newDiv = '<div class="panel panel-info">' +
-        '<h4 class= "panel-title" data-id=' + data[i]._id + '> <a href="' + data[i].link + '">' + data[i].title + '</a>' +
-        '<div class="panel-body">' + data[i].description + '</div>'  +     
-        '<button type="button" class="saveArticle btn btn-primary" onclick=deleteArticle("' + data[i]._id + '")>Delete Article</button>' +
-        ' <button type="button" class="saveNote btn btn-primary" data-toggle="modal" data-target="#notesModal" data-whatever="' + data[i]._id + '" onclick=getID("' + data[i]._id + '")>Add Notes</button>'
-        '</div>'
+        var newDiv = '<div class="card"> <div class="card-body">' +
+        '<h4 class= "card-title" data-id=' + data[i]._id + '> <a href="' + data[i].link + '">' + data[i].title + '</a>' +
+        '<p><h6 class="card-text">' + data[i].description + '</h6></p>'  +     
+        '<button type="button" class="saveArticle btn btn-danger" onclick=deleteArticle("' + data[i]._id + '")>Delete Article</button>' +
+        ' <button type="button" class="saveNote btn btn-info" data-toggle="modal" data-target="#notesModal" data-whatever="' + data[i]._id + '" onclick=getID("' + data[i]._id + '")>Add Notes</button>'
+        '</div></div>'
         $("#articles").append(newDiv);    
         //$("#articles").append("<p data-id='" + data[i]._id + "'>" + data[i].title + "<br />" + data[i].link + "</p>");
         }
